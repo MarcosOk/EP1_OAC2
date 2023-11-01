@@ -186,7 +186,7 @@ convert_to_float:
   process_partial_string:    
    # Initialize variables    
    li $t3, 0
-   #li $t5, 4
+   li $t5, 0
    li $t6, 0  
    li $t7, 0                                     # Index for 'adjust_format_float'
    li $t8, 0
@@ -198,7 +198,7 @@ convert_to_float:
    #li $v0, 1                                     # Set $v0 to 1 for printing an integer
    #syscall                                       # Execute the print operation      
    
-   add $t6, $t6, $t2                              # Copy index of partial_string[]   
+   add $t6, $t6, $t2                              # Copy index of partial_string[] from $t2   
    
    #check if it has a decimal part 
    check_decimal_part:                                                  
@@ -210,32 +210,49 @@ convert_to_float:
     subi $t6, $t6, 1                              # Decrement index      
     blt $t6, $zero integer_part_create_float      # Avoid invalid index number 
     j check_decimal_part     
-
    
-   decimal_part_create_float:    
+   # 3.2.1) Create decimal part of float	
    # check how many decimal digits
+   decimal_part_create_float:    
    sub $t8, $t2, $t6                              # index of last number - index of the period = total decimal digits
-   
    addi $t6, $t6, 1                               # index for the first decimal digit
-   lb $t3, partial_string($t6)                    # get first decimal digit  
    
-   sub $t3, $t3, 48                               # convert decimal digit in ASCII to integer 
-    
+   lb $t3, partial_string($t6)                    # get first decimal digit    
+   sub $t3, $t3, 48                               # convert decimal digit in ASCII to integer    
    mtc1 $t3, $f1     	            # Move integer to float register
    cvt.s.w $f1, $f1                               # Convert to float  
    
    # Divide by 10    
    l.s $f2, float_ten                                	
-   div.s $f1, $f1, $f2                     
- 
-   # Sum with the final register
-   add.s $f0, $f0, $f1                            # $f0 will store the final float   
+   div.s $f1, $f1, $f2                  
+   add.s $f0, $f0, $f1                            # Sum with the final register -$f0 will store the final float   
    
    ############ TESTE ##################
    # Print the floating-point number in $f2
-   #mov.s $f12, $f0      # Load the float value from $f2 to $f12
-   #li $v0, 2            # Set $v0 to 2 for printing a float
-   #syscall              # Execute the print operation
-                            
+   #mov.s $f12, $f0                               # Load the float value from $f2 to $f12
+   #li $v0, 2                                     # Set $v0 to 2 for printing a float
+   #syscall                                       # Execute the print operation
+   
+   subi $t8, $t8, 1                               # Check if there are more decimal digits   
+   beqz $t8, integer_part_create_float
+   
+   # Divide by 100
+   addi $t6, $t6, 1                               # index for the second decimal digit
+   lb $t5, partial_string($t6)                     
+   sub $t5, $t5, 48                               # Convert decimal digit in ASCII to integer    
+   mtc1 $t5, $f1     	            # Move integer to float register
+   cvt.s.w $f1, $f1                               # Convert to float                                                                                                          
+   
+   l.s $f2, float_hundred                               	
+   div.s $f1, $f1, $f2                  
+   add.s $f0, $f0, $f1
+   
+   ############ TESTE ##################                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ############ TESTE ##################
+   # Print the floating-point number in $f2
+   mov.s $f12, $f0                              # Load the float value from $f2 to $f12
+   li $v0, 2                                    # Set $v0 to 2 for printing a float
+   syscall                                      # Execute the print operation                                                                                                                                                                                                                                                                                             
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+   # 3.2.2) Create integer part of float                                                                           
    integer_part_create_float:
-   jr $ra
+   jr $ra	
