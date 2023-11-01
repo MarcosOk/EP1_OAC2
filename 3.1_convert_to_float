@@ -1,0 +1,182 @@
+.data     
+  #Function 1 - Read txt.
+  xtrain_txt:   .asciiz "xtrain.txt" 
+  xtrain_array: .space 18000 # Array characters 
+  
+  ytrain_txt:   .asciiz "ytrain.txt" 
+  ytrain_array: .space 18000 # Array characters 
+  
+  #Function 2 - Get User Input
+  str_num: .asciiz "Quantos numeros deseja inserir? (maximo 200)\n"
+  user_input: .word 0   # variable to user's input 	 	
+  check_input_msg: .asciiz "You entered: "
+
+  #Function 3 - Convert to Float
+  xtrain_array_float:   .align 2
+  	     .space 6400   # Array floats  		
+  partial_string:       .space 15
+
+  float_constant:       .float 0.0     # Initialize a float constant
+  float_ten:            .float 10.0    # Declare a float constant
+  float_hundred:        .float 100.0   # Declare a float constant
+  float_thousand:       .float 1000.0  # Declare a float constant
+  				
+.text
+.globl main
+
+main:
+  jal get_user_input
+  
+  jal read_xtrain 
+  
+  jal read_ytrain     
+
+  jal convert_to_float
+
+  # Exit the program
+  li $v0, 10        # syscall 10 (exit)
+  syscall
+
+########################### FUNCTIONS ################################################################################## 
+
+####### 1) FUNCTION - READ FILES ####################################################################################### 
+####### 1.1) READ xtrain.txt 
+read_xtrain: 
+  li $v0, 13       # syscall 13 (open file)
+  la $a0, xtrain_txt # Load the xtrain_txt
+  li $a1, 0        # Read-only mode
+  li $a2, 0        # File permissions (ignored)
+  syscall
+  
+  move $s0, $v0
+ 
+  li $v0, 14        # syscall 14 (read file)
+  move $a0, $s0      # file descriptor 
+
+  la $a1, xtrain_array   
+  li $a2, 18000
+  syscall
+
+  # Null-terminate the copied string  
+  addi $t0, $a1, 18000
+  sb $zero, ($t0)       # Null-terminate at the end
+  
+  ############ TESTE ##################		
+  # Print the copied content
+  #li $v0, 4         # syscall 4 (print string)
+  #la $a0, xtrain_array # Load the string to print
+  #syscall
+  
+  # Close the file
+  li $v0, 16        # syscall 16 (close file)
+  syscall		
+
+  jr $ra	
+  
+####### 1.2) READ ytrain.txt 
+read_ytrain: 
+  li $v0, 13       # syscall 13 (open file)
+  la $a0, ytrain_txt 
+  li $a1, 0        # Read-only mode
+  li $a2, 0        # File permissions (ignored)
+  syscall
+  
+  move $s0, $v0
+ 
+  li $v0, 14        # syscall 14 (read file)
+  move $a0, $s0      # file descriptor 
+
+  la $a1, ytrain_array  
+  li $a2, 18000
+  syscall
+
+  # Null-terminate the copied string  
+  addi $t0, $a1, 18000
+  sb $zero, ($t0)       # Null-terminate at the end
+  
+  ############ TESTE ##################		
+  # Print the copied content
+  #li $v0, 4         # syscall 4 (print string)
+  #la $a0, ytrain_array  # Load the string to print
+  #syscall
+  
+  # Close the file
+  li $v0, 16        # syscall 16 (close file)
+  syscall		
+
+  jr $ra
+
+####### 2) FUNCTION - GET USER INPUT #######################################################################################
+
+get_user_input:
+  la $a0, str_num # print 'str_num'
+  li $v0, 4
+  syscall
+    
+  li $v0, 5  # read an integer from the user
+  syscall  
+  
+  sw $v0, user_input # Store the result
+  
+  # Display a message to check the user's input
+  la $a0, check_input_msg
+  li $v0, 4  
+  syscall 
+  
+  lw $a0, user_input  # Load the user's input from the variable
+  li $v0, 1
+  syscall
+  
+  jr $ra  
+  
+####### FUNCTION 3) CONVERT TO FLOAT #######################################################################################
+convert_to_float:
+  # Initialize variables
+  li $t0, 0                                 # loop counter for 'convert_to_float'
+  li $t1, 0                                 # index for 'xtrain_array'
+  li $t2, 0                                 # index for 'xtrain_array_float'
+  li $t3, 0                                 # index for 'partial_string'
+  li $t4, 0
+  li $t5, 0
+  li $t6, 0 
+  lw $a0, user_input                        # user input
+  
+  # 3.1) CREATE PARTIA STRING              
+  # Loop to create 'partial_string' array 	
+  loop_get_chars_to_partial_string:          # Loop to create 'partial_string' array
+   
+   lb $t5, xtrain_array($t1)                 # Load a character from xtrain_array   
+                       
+   beq $t5, 0x2C, final_partial_string     # check: comma (',') 
+   beq $t5, 0x00, final_partial_string     # check: null-terminator ('\0')
+   beq $t5, 0xA, final_partial_string      # check:  new-line  ('\n')
+     
+   # Check if it's a decimal digit (0-9)
+   li $t4, 48                                # ASCII code for '0'
+   li $t6, 57                                # ASCII code for '9'
+   blt $t5, $t4, not_decimal_or_period       # Branch if character is less than '0'
+   bgt $t5, $t6, not_decimal_or_period       # Branch if character is greater than '9'
+   
+   # Check if it's a period ('.')
+   li $t4, 46                                # ASCII code for a period ('.')
+   bne $t5, $t4, not_decimal_or_period 
+  
+   # At this point is a 'decimal' or 'period'
+   sb $t5, partial_string($t3)               # Add character to partial_string
+   addi $t1, $t1, 1                          # increment 'xtrain_array(index)'
+   addi $t3, $t3, 1                          # increment 'partial_string(index)'
+   j loop_get_chars_to_partial_string  
+   
+   not_decimal_or_period:
+    addi $t1, $t1, 1                         # increment 'xtrain_array(index)'
+    addi $t3, $t3, 1                         # increment 'partial_string(index)'                        
+    j loop_get_chars_to_partial_string                          
+   
+   final_partial_string:
+   # Null-terminate the partial_string
+   addi $t3, $t3, 1 
+   sb $zero, partial_string($t3)             
+   
+   li, $t3, 0                                # reset index 
+   addi $t1, $t1, 1                          # increment for next loop of convert_to_float                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+   j loop_get_chars_to_partial_string  
