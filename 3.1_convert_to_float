@@ -179,4 +179,6 @@ convert_to_float:
    
    li, $t3, 0                                # reset index 
    addi $t1, $t1, 1                          # increment for next loop of convert_to_float                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-   j loop_get_chars_to_partial_string  
+   j process_partial_string 
+# 3.2) CONVERT 'partial_string' TO FLOAT    
+  process_partial_string:  
