@@ -336,4 +336,14 @@ convert_to_float:
    #li $v0, 2                                     # Set $v0 to 2 for printing a float
    #syscall                                       # Execute the print operation 
    
-   jr $ra			
+   #clean
+   move $t2, $zero                            
+   move $t3, $zero                                  
+   move $t4, $zero                                  
+   move $t5, $zero                                  
+   move $t6, $zero
+   move $t7, $zero
+   move $t8, $zero  
+   move $t9, $zero                                   
+   
+   jr $ra		
