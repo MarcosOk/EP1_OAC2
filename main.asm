@@ -27,6 +27,7 @@
   xtest_array_float:          .align 2
   	           .space 6400    # Array floats  	             	               	     
 
+  non_valid_float_value:      .float -1      # Indicates the end of the float array	
   float_constant:             .float 0.0     # Initialize a float constant
   float_ten:                  .float 10.0    # Declare a float constant
   float_hundred:              .float 100.0   # Declare a float constant
@@ -64,6 +65,7 @@ main:
   la $a2, xtrain_array_float 
   sw $a2, base_adress_of_train_array
   jal convert_partial_string_to_float
+  
   
   # 3.2) Create float array 'ytrain_array_chars'
   #la $t1, ytrain_array_chars
@@ -104,7 +106,7 @@ read_txt:
   sb $zero, ($t0)      # Null-terminate at the end
   
   ############ TESTE ###########################		
-  # Print the copied content
+  # Print 
   #li $v0, 4                 
   #move $a0, $a3             
   #syscall
@@ -374,9 +376,9 @@ convert_partial_string_to_float:
     j fill_train_array_float_loop                                                                                                                                                                                                                                                                                                                                                                                                          
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
    end_function:   
-    # Null-terminate the last valid position of 'train_array_float'  
+    # Include non-valid float in the last valid position of 'train_array_float'  
     addi $t9, $t9, 4                              # increment index of 'train_array_float'  
-    l.s $f0, float_constant 
+    l.s $f0, non_valid_float_value 
     s.s $f0, base_adress_of_train_array($t9)         
    
     #clean registers
