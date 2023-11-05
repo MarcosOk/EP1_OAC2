@@ -49,14 +49,14 @@ main:
   jal read_txt
   
   # 2.2) Get chars of 'ytrain.txt'
-  la $a0, ytrain_txt
-  la $a3, ytrain_array_chars 
-  jal read_txt
+  #la $a0, ytrain_txt
+  #la $a3, ytrain_array_chars 
+  #jal read_txt
   
   # 2.3) Get chars of 'xtest.txt'
-  la $a0, xtest_txt
-  la $a3, xtest_array_chars 
-  jal read_txt
+  #la $a0, xtest_txt
+  #la $a3, xtest_array_chars 
+  #jal read_txt
     
   # 3) FUNCTION 3
   # 3.1) Create float array 'xtrain_array_chars'
@@ -66,16 +66,16 @@ main:
   jal convert_partial_string_to_float
   
   # 3.2) Create float array 'ytrain_array_chars'
-  la $t1, ytrain_array_chars
-  la $a2, ytrain_array_float
-  sw $a2, base_adress_of_train_array
-  jal convert_partial_string_to_float
+  #la $t1, ytrain_array_chars
+  #la $a2, ytrain_array_float
+  #sw $a2, base_adress_of_train_array
+  #jal convert_partial_string_to_float
   
   # 3.3) Create float array 'ytrain_array_chars'
-  la $t1, xtest_array_chars
-  la $a2, xtest_array_float
-  sw $a2, base_adress_of_train_array
-  jal convert_partial_string_to_float
+  #la $t1, xtest_array_chars
+  #la $a2, xtest_array_float
+  #sw $a2, base_adress_of_train_array
+  #jal convert_partial_string_to_float
   
   
   # Exit the program
@@ -103,10 +103,10 @@ read_txt:
   addi $t0, $a1, 18000
   sb $zero, ($t0)      # Null-terminate at the end
   
-  ############ TESTE ##################		
+  ############ TESTE ###########################		
   # Print the copied content
-  #li $v0, 4           # syscall 4 (print string)
-  #move $a0, $a3       # Load the string to print   
+  #li $v0, 4                 
+  #move $a0, $a3             
   #syscall
   
   #clean registers
@@ -125,23 +125,27 @@ read_txt:
 
 ####### 2) FUNCTION - GET USER INPUT ##################################################
 get_user_input:
-  la $a0, str_num # print 'str_num'
+  la $a0, str_num       # print 'str_num'
   li $v0, 4
   syscall
     
-  li $v0, 5  # read an integer from the user
+  li $v0, 5             # read an integer from the user
   syscall  
   
-  sw $v0, user_input # Store the result
+  sw $v0, user_input    # Store the result
   
   # Display a message to check the user's input
   la $a0, check_input_msg
   li $v0, 4  
   syscall 
   
-  lw $a0, user_input  # Load the user's input from the variable
+  lw $a0, user_input    # Load the user's input from the variable
   li $v0, 1
   syscall
+  
+  # clean registers
+  move $v0, $zero
+  move $a0, $zero  
   
   jr $ra 
   
@@ -149,7 +153,6 @@ get_user_input:
 convert_partial_string_to_float:
   # Initialize variables
   lw $t0, user_input                         # loop counter (user input) - the quantity of float numbers the user wants
-  #li $t1, 0
   
   fill_train_array_float_loop:
   li $t2, 0                                  # Index 'partial_string[]'
@@ -254,8 +257,7 @@ convert_partial_string_to_float:
    # Check if there is more decimal digits to convert
    subi $t8, $t8, 1
    beqz $t8, integer_part_create_float_WITH_decimals
-         
-               
+                        
    # Divide by 100   
    addi $t6, $t6, 1                               # index for the second decimal digit
    lb $t5, partial_string($t6)                     
@@ -270,8 +272,7 @@ convert_partial_string_to_float:
    # Check if there is more decimal digits to convert
    subi $t8, $t8, 1
    beqz $t8, integer_part_create_float_WITH_decimals
-   
-   
+      
    # Divide by 1000  
    addi $t6, $t6, 1                               # index for the third decimal digit
    lb $t5, partial_string($t6)                     
@@ -290,9 +291,7 @@ convert_partial_string_to_float:
    add $t6, $t2, $zero                           # $t2 = last valid index position of 'partial_string' points to the first integer      
    j integer_part_create_float                   
            
-   integer_part_create_float_WITH_decimals:    
-   #la $t9, index_of_period                       # get index of the period  
-   #lw $t6, 0($t9)              
+   integer_part_create_float_WITH_decimals:   
    la $t8, index_of_period                       # get index of the period 
    lw $t6, 0($t8)              
    
@@ -356,8 +355,15 @@ convert_partial_string_to_float:
    li $t9, 0    
                                        
    store_float_in_train_array_float:                   
-    s.s $f0, base_adress_of_train_array($t9)     
-    l.s $f0, float_constant                      # clean $f0 for the next float    
+    s.s $f0, base_adress_of_train_array($t9)
+    
+    ############ TESTE ##################
+    # Print the floating-point number in $f
+    #mov.s $f12, $f0                              
+    #li $v0, 2                                    
+    #syscall                                          
+                   
+    l.s $f0, float_constant                       # clean $f0 for the next float    
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     #adjust index of 'train_array_float'
     addi $t9,$t9, 4                               # increment index of 'train_array_float'  
