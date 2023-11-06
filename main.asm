@@ -358,17 +358,11 @@ convert_partial_string_to_float:
     
     ############ TESTE ####################
     # Print     
-    #l.s $f0, base_adress_of_train_array($t9)  
-    #li $v0, 2
-    #mov.s $f12, $f0
-    #syscall    
-    #######################################
-    ############ TESTE ####################
-    # Print     
+    l.s $f16, base_adress_of_train_array($t9)  
     li $v0, 2
-    mov.s $f12, $f0
+    mov.s $f12, $f16
     syscall    
-    #######################################          
+    #######################################      
                     
     l.s $f0, float_constant                       # clean $f0 for the next float    
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
