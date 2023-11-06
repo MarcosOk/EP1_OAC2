@@ -1,17 +1,17 @@
 .data     
   #Function 1 - Read txt.
   xtrain_txt:             .asciiz "xtrain.txt" 
-  xtrain_array_chars:     .space 18000          # Array characters 
+  xtrain_array_chars:     .space 14500          # Array characters 
   
   xtest_txt:              .asciiz "xtest.txt" 
-  xtest_array_chars:      .space 18000          # Array characters 
+  xtest_array_chars:      .space 14500          # Array characters 
   
   ytrain_txt:             .asciiz "ytrain.txt" 
-  ytrain_array_chars:     .space 18000          # Array characters 
+  ytrain_array_chars:     .space 14500          # Array characters 
   
   #Function 2 - Get User Input
   str_num:               .asciiz "Quantos numeros deseja inserir? (maximo 200)\n"
-  user_input:            .word 0       # variable to user's input 	 	
+  user_input:            .word 0                # variable to user's input 	 	
   check_input_msg:       .asciiz "You entered: "
 
   #Function 3 - Convert to Float		
@@ -27,13 +27,13 @@
   xtest_array_float:          .align 2
   	           .space 6400    # Array floats  	             	               	     
 
-  non_valid_float_value:      .float -999      # Indicates the end of the float array	
+  non_valid_float_value:      .float -999    # Indicates the end of the float array	
   float_constant:             .float 0.0     # Initialize a float constant
   float_ten:                  .float 10.0    # Declare a float constant
   float_hundred:              .float 100.0   # Declare a float constant
   float_thousand:             .float 1000.0  # Declare a float constant
      
-  count_decimal_digits:       .word 0   # quantify how many digits AFTER the period ('.')  
+  count_decimal_digits:       .word 0        # quantify how many digits AFTER the period ('.')  
   index_of_period:            .word 0   
  	
 .text
@@ -48,16 +48,22 @@ main:
   la $a0, xtrain_txt
   la $a3, xtrain_array_chars 
   jal read_txt
-  
+    
   # 2.2) Get chars of 'ytrain.txt'
   la $a0, ytrain_txt
   la $a3, ytrain_array_chars 
   jal read_txt
-  
+    
   # 2.3) Get chars of 'xtest.txt'
   la $a0, xtest_txt
   la $a3, xtest_array_chars 
   jal read_txt
+  
+  ############ TESTE ###########################		
+  # Print 
+  #li $v0, 4                 
+  #la $a0, xtest_array_chars              
+  #syscall
     
   # 3) FUNCTION 3
   # 3.1) Create float array 'xtrain_array_chars'
@@ -96,30 +102,30 @@ read_txt:
   li $v0, 14           # syscall 14 (read file)
   move $a0, $s0        # file descriptor 
   move $a1, $a3
-  li $a2, 18000
+  li $a2, 14500
   syscall
 
   # Null-terminate the copied string  
-  addi $t0, $a1, 18000
+  addi $t0, $a1, 14500
   sb $zero, ($t0)      # Null-terminate at the end
   
   ############ TESTE ###########################		
   # Print 
   #li $v0, 4                 
   #move $a0, $a3             
-  #syscall
+  #syscall                             
   
+  # Close the file
+  li $v0, 16          # syscall 16 (close file)
+  syscall
+   
   #clean registers
   move $t0, $zero 
   move $v0, $zero
   move $s0, $zero   
   move $a0, $zero  
   move $a1, $zero
-  move $a3, $zero                              
-  
-  # Close the file
-  li $v0, 16          # syscall 16 (close file)
-  syscall		
+  move $a3, $zero 		
 
   jr $ra		
 
