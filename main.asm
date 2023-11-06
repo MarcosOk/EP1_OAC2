@@ -27,7 +27,7 @@
   xtest_array_float:          .align 2
   	           .space 6400    # Array floats  	             	               	     
 
-  non_valid_float_value:      .float -1      # Indicates the end of the float array	
+  non_valid_float_value:      .float -999      # Indicates the end of the float array	
   float_constant:             .float 0.0     # Initialize a float constant
   float_ten:                  .float 10.0    # Declare a float constant
   float_hundred:              .float 100.0   # Declare a float constant
@@ -50,14 +50,14 @@ main:
   jal read_txt
   
   # 2.2) Get chars of 'ytrain.txt'
-  #la $a0, ytrain_txt
-  #la $a3, ytrain_array_chars 
-  #jal read_txt
+  la $a0, ytrain_txt
+  la $a3, ytrain_array_chars 
+  jal read_txt
   
   # 2.3) Get chars of 'xtest.txt'
-  #la $a0, xtest_txt
-  #la $a3, xtest_array_chars 
-  #jal read_txt
+  la $a0, xtest_txt
+  la $a3, xtest_array_chars 
+  jal read_txt
     
   # 3) FUNCTION 3
   # 3.1) Create float array 'xtrain_array_chars'
@@ -65,21 +65,19 @@ main:
   la $a2, xtrain_array_float 
   sw $a2, base_adress_of_train_array
   jal convert_partial_string_to_float
-  
-  
+     
   # 3.2) Create float array 'ytrain_array_chars'
-  #la $t1, ytrain_array_chars
-  #la $a2, ytrain_array_float
-  #sw $a2, base_adress_of_train_array
-  #jal convert_partial_string_to_float
+  la $t1, ytrain_array_chars
+  la $a2, ytrain_array_float
+  sw $a2, base_adress_of_train_array
+  jal convert_partial_string_to_float
   
-  # 3.3) Create float array 'ytrain_array_chars'
-  #la $t1, xtest_array_chars
-  #la $a2, xtest_array_float
-  #sw $a2, base_adress_of_train_array
-  #jal convert_partial_string_to_float
-  
-  
+  # 3.3) Create float array 'xtest_array_float'
+  la $t1, xtest_array_chars
+  la $a2, xtest_array_float
+  sw $a2, base_adress_of_train_array
+  jal convert_partial_string_to_float
+    
   # Exit the program
   li $v0, 10                  
   syscall
@@ -161,7 +159,6 @@ convert_partial_string_to_float:
   li $t3, 0                                  # Store each char
   li $t4, 0                                  # Store ASCII code
   li $t5, 0                                  # Store ASCII code  
-  #lw $a0, user_input                         # User input
   
 #### 3.1) CREATE PARTIAL STRING #############################################             
   # Loop to create 'partial_string' array 	
@@ -215,7 +212,7 @@ convert_partial_string_to_float:
    li $t3, 0
    li $t5, 0
    li $t6, 0  
-   li $t7, 0                                     # Index for 'adjust_format_float'
+   li $t7, 0                                      # Index for 'adjust_format_float'
    li $t8, 0
    l.s $f2, float_constant 
    add.s $f0, $f0, $f2
@@ -355,16 +352,24 @@ convert_partial_string_to_float:
    lw $t2, user_input 
    bne $t0, $t2, store_float_in_train_array_float
    li $t9, 0    
-                                       
+                                                                              
    store_float_in_train_array_float:                   
-    s.s $f0, base_adress_of_train_array($t9)
+    s.s $f0, base_adress_of_train_array($t9)                                              
     
-    ############ TESTE ##################
-    # Print the floating-point number in $f
-    #mov.s $f12, $f0                              
-    #li $v0, 2                                    
-    #syscall                                          
-                   
+    ############ TESTE ####################
+    # Print     
+    #l.s $f0, base_adress_of_train_array($t9)  
+    #li $v0, 2
+    #mov.s $f12, $f0
+    #syscall    
+    #######################################
+    ############ TESTE ####################
+    # Print     
+    li $v0, 2
+    mov.s $f12, $f0
+    syscall    
+    #######################################          
+                    
     l.s $f0, float_constant                       # clean $f0 for the next float    
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     #adjust index of 'train_array_float'
@@ -382,6 +387,15 @@ convert_partial_string_to_float:
     s.s $f0, base_adress_of_train_array($t9)         
    
     #clean registers
+    l.s $f0, float_constant
+    l.s $f1, float_constant
+    l.s $f2, float_constant
+    
+    move $a0, $zero
+    move $a1, $zero
+    move $a2, $zero
+    move $a3, $zero
+    
     move $t0, $zero
     move $t1, $zero   
     move $t2, $zero                            
