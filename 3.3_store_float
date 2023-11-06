@@ -312,6 +312,15 @@ convert_partial_string_to_float:
     s.s $f0, base_adress_of_train_array($t9)         
    
     #clean registers
+    l.s $f0, float_constant
+    l.s $f1, float_constant
+    l.s $f2, float_constant
+    
+    move $a0, $zero
+    move $a1, $zero
+    move $a2, $zero
+    move $a3, $zero
+
     move $t0, $zero
     move $t1, $zero   
     move $t2, $zero                            
