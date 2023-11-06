@@ -1,13 +1,13 @@
 .data     
   #Function 1 - Read txt.
   xtrain_txt:             .asciiz "xtrain.txt" 
-  xtrain_array_chars:     .space 14500          # Array characters 
+  xtrain_array_chars:     .space 16384          # Array characters 
   
   xtest_txt:              .asciiz "xtest.txt" 
-  xtest_array_chars:      .space 14500          # Array characters 
+  xtest_array_chars:      .space 16384          # Array characters 
   
   ytrain_txt:             .asciiz "ytrain.txt" 
-  ytrain_array_chars:     .space 14500          # Array characters 
+  ytrain_array_chars:     .space 16384          # Array characters 
   
   #Function 2 - Get User Input
   str_num:               .asciiz "Quantos numeros deseja inserir? (maximo 200)\n"
@@ -17,15 +17,15 @@
   #Function 3 - Convert to Float		
   newline_char:               .asciiz "/" 
   
-  base_adress_of_train_array: .space 4
+  base_adress_of_float_array: .space 8
   partial_string:             .space 15
   
   xtrain_array_float:         .align 2
-  	           .space 6400    # Array floats
+  	           .space 4096    # Array floats
   ytrain_array_float:         .align 2
-  	           .space 6400    # Array floats
+  	           .space 4096     # Array floats
   xtest_array_float:          .align 2
-  	           .space 6400    # Array floats  	             	               	     
+  	           .space 4096     # Array floats  	             	               	     
 
   non_valid_float_value:      .float -999    # Indicates the end of the float array	
   float_constant:             .float 0.0     # Initialize a float constant
@@ -43,46 +43,51 @@ main:
   # 1) FUNCTION 1
   jal get_user_input
   
-  # 2) FUNCTION 2      
   # 2.1) Get chars of 'xtrain.txt'
   la $a0, xtrain_txt
   la $a3, xtrain_array_chars 
-  jal read_txt
-    
+  jal read_txt                               
   # 2.2) Get chars of 'ytrain.txt'
   la $a0, ytrain_txt
   la $a3, ytrain_array_chars 
-  jal read_txt
-    
+  jal read_txt  
   # 2.3) Get chars of 'xtest.txt'
   la $a0, xtest_txt
   la $a3, xtest_array_chars 
-  jal read_txt
+  jal read_txt                                   
   
-  ############ TESTE ###########################		
-  # Print 
-  #li $v0, 4                 
-  #la $a0, xtest_array_chars              
-  #syscall
-    
-  # 3) FUNCTION 3
   # 3.1) Create float array 'xtrain_array_chars'
   la $t1, xtrain_array_chars
   la $a2, xtrain_array_float 
-  sw $a2, base_adress_of_train_array
-  jal convert_partial_string_to_float
-     
+  sw $a2, base_adress_of_float_array
+  jal convert_partial_string_to_float  
   # 3.2) Create float array 'ytrain_array_chars'
   la $t1, ytrain_array_chars
   la $a2, ytrain_array_float
-  sw $a2, base_adress_of_train_array
+  sw $a2, base_adress_of_float_array
   jal convert_partial_string_to_float
-  
   # 3.3) Create float array 'xtest_array_float'
   la $t1, xtest_array_chars
   la $a2, xtest_array_float
-  sw $a2, base_adress_of_train_array
+  sw $a2, base_adress_of_float_array
   jal convert_partial_string_to_float
+ 
+  ############ TESTE ###########################		
+  # Print 
+  #li $v0, 4                 
+  #la $a0, xtrain_array_chars        
+  #syscall  
+  ############ TESTE ###########################		
+  # Print 
+  #li $v0, 4                 
+  #la $a0, ytrain_array_chars         
+  #syscall  
+  ############ TESTE ###########################		
+  # Print 
+  #li $v0, 4                 
+  #la $a0, xtest_array_chars       
+  #syscall     
+        
     
   # Exit the program
   li $v0, 10                  
@@ -102,18 +107,28 @@ read_txt:
   li $v0, 14           # syscall 14 (read file)
   move $a0, $s0        # file descriptor 
   move $a1, $a3
-  li $a2, 14500
+  li $a2, 16384
   syscall
 
   # Null-terminate the copied string  
-  addi $t0, $a1, 14500
+  addi $t0, $a1, 16383 # 16384 - 1
   sb $zero, ($t0)      # Null-terminate at the end
   
   ############ TESTE ###########################		
   # Print 
   #li $v0, 4                 
   #move $a0, $a3             
-  #syscall                             
+  #syscall  
+  
+  ############ TESTE ##########################
+  # Print     
+  #li $t9, 4
+  #lb $t8, xtest_array_chars($t9)  
+     
+  #li $v0, 11       # Print character (syscall code for printing a character)
+  #move $a0, $t8    # Load the character to print into $a0
+  #syscall
+  #############################################                             
   
   # Close the file
   li $v0, 16          # syscall 16 (close file)
@@ -342,11 +357,11 @@ convert_partial_string_to_float:
    
    subi $t6, $t6, 1	                      # Adjust index for next integer
    blt $t6, $zero, exit_convert_partial_string_to_float     # Check if index is valid ( index >= 0) 
-   
+     
    exit_convert_partial_string_to_float:                             
    # Clear the partial_string array (set each element to null-terminator)
    la $t2, partial_string              # Load the base address of partial_string                      
-    
+         
    clear_loop:
        sb $zero, 0($t2)                # Store the null-terminator at the current element
        addi $t2, $t2, 1                # Move to the next element
@@ -360,14 +375,14 @@ convert_partial_string_to_float:
    li $t9, 0    
                                                                               
    store_float_in_train_array_float:                   
-    s.s $f0, base_adress_of_train_array($t9)                                              
+    s.s $f0, base_adress_of_float_array($t9)                                              
     
     ############ TESTE ####################
     # Print     
-    l.s $f16, base_adress_of_train_array($t9)  
-    li $v0, 2
-    mov.s $f12, $f16
-    syscall    
+    #l.s $f16, base_adress_of_float_array($t9)  
+    #li $v0, 2
+    #mov.s $f12, $f16
+    #syscall    
     #######################################      
                     
     l.s $f0, float_constant                       # clean $f0 for the next float    
@@ -384,7 +399,7 @@ convert_partial_string_to_float:
     # Include non-valid float in the last valid position of 'train_array_float'  
     addi $t9, $t9, 4                              # increment index of 'train_array_float'  
     l.s $f0, non_valid_float_value 
-    s.s $f0, base_adress_of_train_array($t9)         
+    s.s $f0, base_adress_of_float_array($t9)         
    
     #clean registers
     l.s $f0, float_constant
