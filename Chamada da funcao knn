@@ -1,0 +1,14 @@
+# Chamada da funcao knn
+
+# Carregua os argumentos nos registradores:
+la $a0, xtrain_array_float  # Endereco do vetor xtrain
+la $a1, ytrain_array_float  # Endereco do vetor ytrain
+li $a2, tamanho_vetor_treinamento  # Tamanho dos vetores de treinamento
+li $a3, indice_xtest  # indice para acessar o vetor xtest
+la $a4, linha_xtest  # Endereco da linha de xtest que sera lido
+
+# Chama a funcao knn
+jal knn
+
+# Recupera o resultado do knn (classe prevista)
+move $classe_prevista, $t0  # A classe prevista estara em $classe_prevista
