@@ -423,5 +423,116 @@ convert_partial_string_to_float:
     move $t9, $zero                                   
       
     jr $ra
-    
+
+#### 4 Função calculate_distance #####################################
+calculate_distance:
+    # Argumentos:
+    # $a0: Endereco do vetor de teste (xtest)
+    # $a1: Endereco do vetor de treinamento (xtrain)
+    # $a2: Numero de elementos nos vetores
+    # $f0: Endereco onde a distancia sera armazenada
+
+    # Limpar registradores
+    move $t0, $zero
+    li.s $f0, 0.0
+
+    calculate_distance_loop:
+    # Verifica se atingi o final dos vetores
+    beq $t0, $a2, calculate_distance_done
+
+    # Calcula a diferenca entre os elementos dos vetores
+    lwc1 $f2, 0($a0)  # Carrega xtest[$t0]
+    lwc1 $f3, 0($a1)  # Carrega xtrain[$t0]
+    sub.s $f2, $f2, $f3
+    mul.s $f2, $f2, $f2  # Eleva ao quadrado
+
+    add.s $f0, $f0, $f2  # Acumula a soma das diferencas
+    addi $a0, $a0, 4  # Avanca para o proximo elemento em xtest
+    addi $a1, $a1, 4  # Avanca para o proximo elemento em xtrain
+    addi $t0, $t0, 1  # Avanca o indice
+    j calculate_distance_loop
+
+    calculate_distance_done:
+    sqrt.s $f0, $f0  # Calcula a raiz quadrada da soma
+
+    # Limpa registradores ao final da função
+    move $t0, $zero
+    li.s $f2, 0.0
+    li.s $f3, 0.0
+
+    jr $ra  # Retorna
+
+#### 5 Função knn #################################
+knn:
+    # Argumentos:
+    # $a0: Endereco do vetor xtrain
+    # $a1: Endereco do vetor ytrain
+    # $a2: Tamanho dos vetores de treinamento
+    # $a3: Índice para acessar o vetor xtest
+    # $a4: Endereco da linha de xtest que sera lida
+    # $t0: Endereco onde a classe prevista sera armazenada
+
+    # Limpa registradores
+    li.s $f12, 1.0  # Valor padrao para a classe prevista
+    li $t1, 0  # Inicializa o contador de vizinhos proximos da classe 0
+    li $t2, 0  # Inicializa o contador de vizinhos proximos da classe 1
+
+    # Calcule o endereco da linha de xtest que sera lido
+    mul $t3, $a3, $a4  # Calcule o deslocamento
+    add $t5, $t3, $a0  # Adicione ao endereco base
+
+    knn_loop:
+    # Verifique se atingimos o final dos vetores de treinamento
+    beq $t1, $a2, knn_done
+
+    # Calcula a distancia entre xtest e xtrain
+    move $a0, $t5  # Endereco da linha de xtest
+    move $a1, $a1  # Endereco de ytrain
+    move $a2, $a3  # indice para acessar xtest
+    jal calculate_distance
+
+    # Com base na distancia, determina a classe
+    c.lt.s $f0, $f12  # Compare com o valor padrão da classe prevista
+    bc1f, not_class_0
+    b class_0
+
+    not_class_0:
+    # Se nao for da classe 0, verifique se e da classe 1
+    c.eq.s $f0, $f12  # Compara com o valor padrao da classe prevista
+    bc1t, class_1
+
+    # Caso contrario, continua para o proximo elemento de treinamento
+    addi $a0, $a0, 4  # Avanca para o proximo elemento em xtrain
+    addi $a1, $a1, 4  # Avanca para o proximo elemento em ytrain
+    j knn_loop
+
+    class_0:
+    addi $t1, $t1, 1  # Incrementa o contador da classe 0
+    j knn_next_iteration
+
+    class_1:
+    addi $t2, $t2, 1  # Incrementa o contador da classe 1
+
+    knn_next_iteration:
+    addi $a0, $a0, 4  # Avanca para o proximo elemento em xtrain
+    addi $a1, $a1, 4  # Avanca para o proximo elemento em ytrain
+    j knn_loop
+
+    knn_done:
+    # Determina a classe prevista com base nos contadores
+    bge $t1, $t2, class_1
+    class_0:
+    li.s $f12, 0.0  # Classe 0
+    j knn_end
+
+    class_1:
+    li.s $f12, 1.0  # Classe 1
+
+    # Limpa registradores ao final da funcao
+    move $t1, $zero
+    move $t2, $zero
+
+    jr $ra  # Retorna
+
+
 ######################################################################
